@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Reveal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="bg-shapes" aria-hidden="true"></div>
+
+    <main class="app">
+      <header class="hero">
+        <p class="eyebrow">Birthday surprise</p>
+        <h1>Find your team</h1>
+        <p class="subtitle">
+          Pick your name below. Your team is revealed only to you — each name works once.
+        </p>
+      </header>
+
+      <section id="screen-pick" class="card screen active">
+        <label for="name-select" class="label">Your name</label>
+        <select id="name-select" class="select" disabled>
+          <option value="">Loading names…</option>
+        </select>
+        <button id="btn-reveal" class="btn primary" type="button" disabled>
+          Reveal my team
+        </button>
+        <p id="pick-error" class="error" role="alert" hidden></p>
+        <p id="remaining-hint" class="hint"></p>
+      </section>
+
+      <section id="screen-spin" class="card screen" hidden>
+        <p class="spin-label">Spinning for <span id="spin-name"></span>…</p>
+        <div class="wheel-wrap">
+          <div class="wheel-pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="320" height="320" aria-hidden="true"></canvas>
+        </div>
+      </section>
+
+      <section id="screen-result" class="card screen" hidden>
+        <p class="result-greeting">Welcome,</p>
+        <h2 id="result-name" class="result-name"></h2>
+        <p class="result-label">You are on team</p>
+        <div id="result-badge" class="team-badge">
+          <span id="result-team"></span>
+        </div>
+        <p class="result-note">Remember your team — keep it secret until the games begin!</p>
+      </section>
+    </main>
+
+    <script src="/js/app.js" type="module"></script>
+  </body>
+</html>
