@@ -1,9 +1,9 @@
 const TEAMS = ["Red", "Green", "Blue", "White"];
 const TEAM_COLORS = {
-  Red: "#e63946",
-  Green: "#2a9d5c",
-  Blue: "#3d7dd4",
-  White: "#f4f0e8",
+  Red: "#ff4757",
+  Green: "#2ed573",
+  Blue: "#3742fa",
+  White: "#f1f2f6",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -69,7 +69,7 @@ async function loadNames() {
     if (statsRes.ok) {
       const { remaining, total } = await statsRes.json();
       remainingHint.textContent =
-        total > 0 ? `${remaining} of ${total} spots left` : "";
+        total > 0 ? `🎟️ ${remaining} of ${total} spins still up for grabs!` : "";
     }
   } catch {
     nameSelect.innerHTML =
@@ -101,24 +101,30 @@ function drawWheel(rotationRad = 0) {
     ctx.closePath();
     ctx.fillStyle = TEAM_COLORS[team];
     ctx.fill();
-    ctx.strokeStyle = "rgba(0,0,0,0.15)";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#2d3436";
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     ctx.save();
     ctx.rotate(start + slice / 2);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = team === "White" ? "#2a2438" : "#fff";
-    ctx.font = "bold 18px DM Sans, sans-serif";
+    ctx.fillStyle = team === "White" ? "#2d3436" : "#fff";
+    ctx.font = "bold 20px Fredoka, Nunito, sans-serif";
+    ctx.strokeStyle = team === "White" ? "transparent" : "rgba(0,0,0,0.2)";
+    ctx.lineWidth = 3;
+    ctx.strokeText(team, radius * 0.62, 0);
     ctx.fillText(team, radius * 0.62, 0);
     ctx.restore();
   });
 
   ctx.beginPath();
-  ctx.arc(0, 0, 18, 0, Math.PI * 2);
-  ctx.fillStyle = "#1a1228";
+  ctx.arc(0, 0, 22, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffd93d";
   ctx.fill();
+  ctx.strokeStyle = "#2d3436";
+  ctx.lineWidth = 3;
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -194,7 +200,7 @@ nameSelect.addEventListener("change", () => setError(""));
 btnReveal.addEventListener("click", () => {
   const name = nameSelect.value;
   if (!name) {
-    setError("Please select your name first.");
+    setError("Hey — pick your name first!");
     return;
   }
   claimAndReveal(name);
