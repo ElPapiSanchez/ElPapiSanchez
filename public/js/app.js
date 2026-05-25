@@ -1,9 +1,15 @@
-const TEAMS = ["Red", "Green", "Blue", "White"];
+const TEAMS = ["Vermelho", "Verde", "Azul", "Branco"];
 const TEAM_COLORS = {
-  Red: "#ff4757",
-  Green: "#2ed573",
-  Blue: "#3742fa",
-  White: "#f1f2f6",
+  Vermelho: "#ff4757",
+  Verde: "#2ed573",
+  Azul: "#3742fa",
+  Branco: "#f1f2f6",
+};
+const TEAM_CSS = {
+  Vermelho: "vermelho",
+  Verde: "verde",
+  Azul: "azul",
+  Branco: "branco",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -73,7 +79,7 @@ async function loadNames() {
     }
   } catch {
     nameSelect.innerHTML =
-      '<option value="">Could not connect — refresh the page</option>';
+      '<option value="">Não foi possível ligar — atualiza a página</option>';
     nameSelect.disabled = true;
     btnReveal.disabled = true;
   }
@@ -109,12 +115,12 @@ function drawWheel(rotationRad = 0) {
     ctx.rotate(start + slice / 2);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = team === "White" ? "#2d3436" : "#fff";
-    ctx.font = "bold 20px Fredoka, Nunito, sans-serif";
-    ctx.strokeStyle = team === "White" ? "transparent" : "rgba(0,0,0,0.2)";
+    ctx.fillStyle = team === "Branco" ? "#2d3436" : "#fff";
+    ctx.font = "bold 17px Fredoka, Nunito, sans-serif";
+    ctx.strokeStyle = team === "Branco" ? "transparent" : "rgba(0,0,0,0.2)";
     ctx.lineWidth = 3;
-    ctx.strokeText(team, radius * 0.62, 0);
-    ctx.fillText(team, radius * 0.62, 0);
+    ctx.strokeText(team, radius * 0.58, 0);
+    ctx.fillText(team, radius * 0.58, 0);
     ctx.restore();
   });
 
@@ -135,6 +141,10 @@ function teamToSliceIndex(team) {
 function spinToTeam(team) {
   return new Promise((resolve) => {
     const index = teamToSliceIndex(team);
+    if (index < 0) {
+      resolve();
+      return;
+    }
     const sliceDeg = 360 / TEAMS.length;
     const sliceMid = index * sliceDeg + sliceDeg / 2;
     const pointerOffset = 270;
@@ -178,7 +188,7 @@ async function claimAndReveal(name) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    setError(data.error || "Something went wrong. Try again.");
+    setError(data.error || "Algo correu mal. Tenta outra vez.");
     btnReveal.disabled = false;
     return;
   }
@@ -191,7 +201,8 @@ async function claimAndReveal(name) {
 
   resultName.textContent = data.name;
   resultTeam.textContent = data.team;
-  resultBadge.className = `team-badge team-${data.team.toLowerCase()}`;
+  const cssTeam = TEAM_CSS[data.team] || data.team.toLowerCase();
+  resultBadge.className = `team-badge team-${cssTeam}`;
   showScreen(screenResult);
 }
 

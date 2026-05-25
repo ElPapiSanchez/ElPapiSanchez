@@ -357,25 +357,25 @@ body {
   }
 }
 
-.team-badge.team-red {
+.team-badge.team-vermelho {
   background: linear-gradient(145deg, #ff6b81, var(--red));
   color: #fff;
   box-shadow: 0 8px 0 #c44569;
 }
 
-.team-badge.team-green {
+.team-badge.team-verde {
   background: linear-gradient(145deg, #7bed9f, var(--green));
   color: #fff;
   box-shadow: 0 8px 0 #218c74;
 }
 
-.team-badge.team-blue {
+.team-badge.team-azul {
   background: linear-gradient(145deg, #70a1ff, var(--blue));
   color: #fff;
   box-shadow: 0 8px 0 #1e3799;
 }
 
-.team-badge.team-white {
+.team-badge.team-branco {
   background: linear-gradient(145deg, #ffffff, var(--white-team));
   color: #2d3436;
   box-shadow: 0 8px 0 #b2bec3;

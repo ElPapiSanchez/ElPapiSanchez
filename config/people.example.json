@@ -1,6 +1,6 @@
 [
-  { "name": "Alex", "team": "Red" },
-  { "name": "Jordan", "team": "Green" },
-  { "name": "Sam", "team": "Blue" },
-  { "name": "Taylor", "team": "White" }
+  { "name": "Maria", "team": "Vermelho" },
+  { "name": "João", "team": "Verde" },
+  { "name": "Ana", "team": "Azul" },
+  { "name": "Pedro", "team": "Branco" }
 ]

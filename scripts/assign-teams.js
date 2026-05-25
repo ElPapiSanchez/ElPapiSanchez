@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
- * Evenly splits a plain-text name list (one name per line) across Red, Green, Blue, White.
+ * Evenly splits a plain-text name list (one name per line) across
+ * Vermelho, Verde, Azul, Branco.
  *
  * Usage:
  *   node scripts/assign-teams.js names.txt > config/people.json
  */
 
 const fs = require("fs");
-const TEAMS = ["Red", "Green", "Blue", "White"];
+const TEAMS = ["Vermelho", "Verde", "Azul", "Branco"];
 
 const inputPath = process.argv[2];
 if (!inputPath) {

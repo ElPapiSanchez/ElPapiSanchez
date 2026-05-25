@@ -6,7 +6,7 @@ const Database = require("better-sqlite3");
 const PORT = process.env.PORT || 3000;
 const PEOPLE_PATH = path.join(__dirname, "config", "people.json");
 const DB_PATH = path.join(__dirname, "data", "assignments.db");
-const VALID_TEAMS = new Set(["Red", "Green", "Blue", "White"]);
+const VALID_TEAMS = new Set(["Vermelho", "Verde", "Azul", "Branco"]);
 
 const app = express();
 app.use(express.json());
@@ -36,7 +36,9 @@ function loadPeopleFromConfig() {
       throw new Error("Each guest must have a name");
     }
     if (!VALID_TEAMS.has(team)) {
-      throw new Error(`Invalid team "${team}" for ${name}. Use Red, Green, Blue, or White.`);
+      throw new Error(
+        `Invalid team "${team}" for ${name}. Use Vermelho, Verde, Azul, or Branco.`
+      );
     }
   }
   return people;
@@ -79,7 +81,21 @@ function reloadFromConfig() {
   reload(people);
 }
 
-seedDatabaseIfEmpty();
+function initDatabase() {
+  const count = db.prepare("SELECT COUNT(*) AS n FROM guests").get().n;
+  if (count === 0) {
+    seedDatabaseIfEmpty();
+  } else {
+    try {
+      reloadFromConfig();
+      console.log("Guest list synced from config/people.json");
+    } catch (err) {
+      console.error("Could not sync guest list:", err.message);
+    }
+  }
+}
+
+initDatabase();
 
 app.get("/api/names", (_req, res) => {
   const rows = db
@@ -93,7 +109,7 @@ app.get("/api/names", (_req, res) => {
 app.post("/api/claim", (req, res) => {
   const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
   if (!name) {
-    return res.status(400).json({ error: "Please select a name." });
+    return res.status(400).json({ error: "Escolhe um nome." });
   }
 
   const guest = db
@@ -101,12 +117,12 @@ app.post("/api/claim", (req, res) => {
     .get(name);
 
   if (!guest) {
-    return res.status(404).json({ error: "That name is not on the guest list." });
+    return res.status(404).json({ error: "Esse nome não está na lista." });
   }
 
   if (guest.claimed_at) {
     return res.status(409).json({
-      error: "This name has already been picked. Please choose another.",
+      error: "Este nome já foi escolhido. Escolhe outro.",
     });
   }
 
