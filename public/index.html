@@ -18,17 +18,18 @@
     <main class="app">
       <header class="hero">
         <div class="party-icons" aria-hidden="true">🎈 🎉 🎂</div>
-        <p class="eyebrow">It’s party time!</p>
-        <h1>Spin & find your team!</h1>
+        <p class="eyebrow">23 da Carol!</p>
+        <h1>Descobre a tua equipa!</h1>
         <p class="subtitle">
-          Pick your name, spin the wheel, and discover your secret squad. Shhh — don’t spoil it for the others!
+          Escolhe o teu nome, roda a roda, e descobre a tua equipa secreta. Não reveles a tua equipa a ninguém, o objetivo é manter a surpresa :)
+          Só podes escolher o teu nome uma vez, e uma vez escolhido, não podes mudar.
         </p>
       </header>
 
       <section id="screen-pick" class="card screen active">
-        <label for="name-select" class="label">Who are you?</label>
+        <label for="name-select" class="label">Quem és tu?</label>
         <select id="name-select" class="select" disabled>
-          <option value="">Loading names…</option>
+          <option value="">A carregar nomes...</option>
         </select>
         <button id="btn-reveal" class="btn primary" type="button" disabled>
           Spin the wheel!
@@ -38,7 +39,7 @@
       </section>
 
       <section id="screen-spin" class="card screen" hidden>
-        <p class="spin-label">Good luck, <span id="spin-name"></span>!</p>
+        <p class="spin-label">Boa sorte, <span id="spin-name"></span>!</p>
         <div class="wheel-wrap">
           <div class="wheel-pointer" aria-hidden="true"></div>
           <canvas id="wheel" width="320" height="320" aria-hidden="true"></canvas>
@@ -48,11 +49,11 @@
       <section id="screen-result" class="card screen" hidden>
         <p class="result-greeting">Woohoo!</p>
         <h2 id="result-name" class="result-name"></h2>
-        <p class="result-label">You’re on team</p>
+        <p class="result-label">Estás na equipa</p>
         <div id="result-badge" class="team-badge">
           <span id="result-team"></span>
         </div>
-        <p class="result-note">Psst… keep your team a secret until the games kick off!</p>
+        <p class="result-note">Psst… mantém a tua equipa secreta até à festa começar!</p>
       </section>
     </main>
 

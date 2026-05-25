@@ -45,14 +45,14 @@ function setError(message) {
 async function loadNames() {
   try {
     const res = await fetch("/api/names");
-    if (!res.ok) throw new Error("Could not load names");
+    if (!res.ok) throw new Error("Não foi possível carregar os nomes");
     const { names } = await res.json();
 
     nameSelect.innerHTML = "";
     const placeholder = document.createElement("option");
     placeholder.value = "";
     placeholder.textContent =
-      names.length > 0 ? "Select your name…" : "All names have been picked!";
+      names.length > 0 ? "Escolhe o teu nome..." : "Todos os nomes já foram escolhidos!";
     nameSelect.appendChild(placeholder);
 
     for (const name of names) {
@@ -69,7 +69,7 @@ async function loadNames() {
     if (statsRes.ok) {
       const { remaining, total } = await statsRes.json();
       remainingHint.textContent =
-        total > 0 ? `🎟️ ${remaining} of ${total} spins still up for grabs!` : "";
+        total > 0 ? `🎟️ ${remaining} de ${total} rodadas ainda por vir!` : "";
     }
   } catch {
     nameSelect.innerHTML =
@@ -200,7 +200,7 @@ nameSelect.addEventListener("change", () => setError(""));
 btnReveal.addEventListener("click", () => {
   const name = nameSelect.value;
   if (!name) {
-    setError("Hey — pick your name first!");
+    setError("Hey — escolhe o teu nome primeiro!");
     return;
   }
   claimAndReveal(name);
