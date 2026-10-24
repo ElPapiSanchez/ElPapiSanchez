@@ -54,7 +54,11 @@ CREATE TABLE IF NOT EXISTS destinations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   kind TEXT NOT NULL CHECK (kind IN ('saving','investment')),
   name TEXT NOT NULL, is_moving INTEGER NOT NULL DEFAULT 0,
-  target_cents INTEGER, starting_cents INTEGER NOT NULL DEFAULT 0
+  target_cents INTEGER
+);
+CREATE TABLE IF NOT EXISTS opening_balances (
+  person TEXT NOT NULL, destination_id INTEGER NOT NULL REFERENCES destinations(id),
+  amount_cents INTEGER NOT NULL, PRIMARY KEY (person, destination_id)
 );
 CREATE TABLE IF NOT EXISTS contributions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -201,7 +205,10 @@ export function loadDataset(db: DB): Dataset {
     person: r.person, month: r.month, categoryId: r.category_id, amountCents: r.amount_cents, mealCents: r.meal_cents,
   }));
   ds.destinations = (db.prepare("SELECT * FROM destinations ORDER BY id").all() as Row[]).map((r) => ({
-    id: r.id, kind: r.kind, name: r.name, isMoving: r.is_moving === 1, targetCents: r.target_cents, startingCents: r.starting_cents,
+    id: r.id, kind: r.kind, name: r.name, isMoving: r.is_moving === 1, targetCents: r.target_cents,
+  }));
+  ds.openings = (db.prepare("SELECT * FROM opening_balances").all() as Row[]).map((r) => ({
+    person: r.person, destinationId: r.destination_id, amountCents: r.amount_cents,
   }));
   ds.contributions = (db.prepare("SELECT * FROM contributions ORDER BY id").all() as Row[]).map((r) => ({
     id: r.id, person: r.person, month: r.month, destinationId: r.destination_id, amountCents: r.amount_cents,

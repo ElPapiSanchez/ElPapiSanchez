@@ -308,7 +308,7 @@ async function pageSettings() {
   const others = goals.filter((g) => !g.isMoving);
   const st = STATUS[moving.status];
   const movingCard = `<div class="card"><header><h3>Meta: mudança para casa em ${monthLabel(meta.goal.targetMonth)}</h3><button class="btn primary small" data-act="editGoal">Editar meta</button></header>
-    <div class="grid">${kpi("Objetivo", moving.targetCents ? eur(moving.targetCents) : "Por definir")}${kpi("Poupado", eur(moving.savedCents), `Inicial ${eur(movingDest.startingCents)}`)}${kpi("Falta", moving.remainingCents === null ? "—" : eur(moving.remainingCents), moving.progress !== null ? pct(moving.progress) : "")}${kpi("Necessário por mês", moving.neededPerMonth === null ? "—" : eur(moving.neededPerMonth), moving.monthsLeft ? `${moving.monthsLeft} meses até à data` : "")}</div>
+    <div class="grid">${kpi("Objetivo", moving.targetCents ? eur(moving.targetCents) : "Por definir")}${kpi("Poupado", eur(moving.savedCents), `Inclui saldo inicial ${eur(moving.openingCents)}`)}${kpi("Falta", moving.remainingCents === null ? "—" : eur(moving.remainingCents), moving.progress !== null ? pct(moving.progress) : "")}${kpi("Necessário por mês", moving.neededPerMonth === null ? "—" : eur(moving.neededPerMonth), moving.monthsLeft ? `${moving.monthsLeft} meses até à data` : "")}</div>
     <div class="bar"><i style="width:${(moving.progress ?? 0) * 100}%"></i></div>
     <p><span class="badge ${st[1]}">${st[0]}</span> <span class="muted small">Ritmo médio recente (3 meses): ${eur(moving.recentAvgPerMonth)}/mês. Sem rendimento de investimento assumido.</span></p>
     <table><thead><tr><th>Contribuições acumuladas</th><th class="n">Valor</th></tr></thead><tbody><tr><td>Francisco</td><td class="n">${eur(moving.perPerson.francisco)}</td></tr><tr><td>Carolina</td><td class="n">${eur(moving.perPerson.carolina)}</td></tr><tr class="total"><td>Total das contribuições</td><td class="n">${eur(moving.perPerson.francisco + moving.perPerson.carolina)}</td></tr></tbody></table></div>`;
@@ -319,12 +319,15 @@ async function pageSettings() {
   const catCard = `<div class="card"><header><h3>Categorias de estilo de vida</h3><button class="btn small" data-act="addCat">+ Categoria</button></header>
     <table><thead><tr><th>Nome</th><th>Pode usar subsídio de refeição</th><th></th></tr></thead><tbody>${meta.categories.map((c) => `<tr><td>${esc(c.name)}</td><td>${c.mealEligible ? "Sim" : "Não"}</td><td class="act n"><button class="btn small" data-act="editCat" data-id="${c.id}">Editar</button> <button class="btn small danger" data-act="delCat" data-id="${c.id}">Apagar</button></td></tr>`).join("")}</tbody></table>
     <p class="muted small">Limites por categoria e global definem-se na página do mês (em cada pessoa).</p></div>`;
+  const openCard = `<div class="card"><header><h3>Saldos iniciais</h3></header>
+    <p class="muted small">Poupança que já existe hoje. Conta para as metas e totais acumulados, sem criar meses no histórico.</p>
+    <table><thead><tr><th></th><th class="n">Francisco</th><th class="n">Carolina</th></tr></thead><tbody>${meta.destinations.map((d) => `<tr><td>${esc(d.name)}${d.isMoving ? ' <span class="badge ok">mudança</span>' : ""}</td>${["francisco", "carolina"].map((p) => `<td class="n">${moneyInput(meta.openings.find((o) => o.person === p && o.destinationId === d.id)?.amountCents ?? 0, `data-act="opening" data-person="${p}" data-dest="${d.id}"`)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   const exp = `<div class="card"><header><h3>Exportar dados (${NAMES[state.view]})</h3></header><div class="row">
     <a class="btn" href="/api/export.xlsx?view=${state.view}">Excel (.xlsx)</a>
     <a class="btn" href="/api/export.csv?view=${state.view}&type=resumo">CSV — resumo mensal</a>
     <a class="btn" href="/api/export.csv?view=${state.view}&type=movimentos">CSV — movimentos</a></div>
     <p class="muted small">Para guardar uma cópia de segurança completa, copie o ficheiro SQLite (ver README).</p></div>`;
-  return movingCard + otherCard + catCard + exp;
+  return movingCard + openCard + otherCard + catCard + exp;
 }
 
 /* ---------- Ações ---------- */
@@ -361,6 +364,11 @@ const actions = {
     const c = readMoney(el);
     if (c === null) return render();
     return save(api("PUT", "/api/contribution", { person: el.dataset.person, month: state.month, destinationId: Number(el.dataset.dest), amountCents: c }));
+  },
+  opening(el) {
+    const c = readMoney(el);
+    if (c === null) return render();
+    return save(api("PUT", "/api/opening", { person: el.dataset.person, destinationId: Number(el.dataset.dest), amountCents: c }));
   },
   plan(el) {
     const c = readMoney(el);
@@ -431,8 +439,8 @@ const actions = {
       const dest = meta.destinations.find((d) => d.isMoving);
       formModal({
         title: "Meta de mudança", intro: "Pode deixar o objetivo vazio até estar definido.",
-        fields: [{ name: "targetMonth", label: "Data da mudança", type: "month", value: meta.goal.targetMonth }, { name: "targetCents", label: "Valor-alvo (€)", type: "money", value: meta.goal.targetCents ?? 0 }, { name: "startingCents", label: "Saldo inicial já poupado (€)", type: "money", value: dest.startingCents }],
-        onSubmit: (v) => save(api("PUT", "/api/goal", { targetMonth: v.targetMonth, targetCents: v.targetCents ? v.targetCents : null, startingCents: v.startingCents }), "Meta guardada"),
+        fields: [{ name: "targetMonth", label: "Data da mudança", type: "month", value: meta.goal.targetMonth }, { name: "targetCents", label: "Valor-alvo (€)", type: "money", value: meta.goal.targetCents ?? 0 }, ],
+        onSubmit: (v) => save(api("PUT", "/api/goal", { targetMonth: v.targetMonth, targetCents: v.targetCents ? v.targetCents : null }), "Meta guardada"),
       });
     });
   },
@@ -470,9 +478,9 @@ function destForm(d, kind) {
   const saving = kind === "saving";
   formModal({
     title: d ? "Editar destino" : saving ? "Nova meta de poupança" : "Novo destino de investimento",
-    fields: [{ name: "name", label: "Nome", type: "text", value: d?.name ?? "" }, ...(saving ? [{ name: "targetCents", label: "Objetivo (€) — opcional", type: "money", value: d?.targetCents ?? 0 }, { name: "startingCents", label: "Saldo inicial (€)", type: "money", value: d?.startingCents ?? 0 }] : [])],
+    fields: [{ name: "name", label: "Nome", type: "text", value: d?.name ?? "" }, ...(saving ? [{ name: "targetCents", label: "Objetivo (€) — opcional", type: "money", value: d?.targetCents ?? 0 }] : [])],
     onSubmit: (v) => {
-      const body = { kind, name: v.name, targetCents: saving && v.targetCents ? v.targetCents : null, startingCents: v.startingCents ?? 0 };
+      const body = { kind, name: v.name, targetCents: saving && v.targetCents ? v.targetCents : null };
       return save(d ? api("PUT", `/api/destinations/${d.id}`, body) : api("POST", "/api/destinations", body), "Guardado");
     },
   });

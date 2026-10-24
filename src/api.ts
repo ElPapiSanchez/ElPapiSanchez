@@ -203,7 +203,7 @@ export function route(db: DB, method: string, path: string, q: URLSearchParams, 
       return {
         now, categories: d.categories, destinations: d.destinations, goal: d.goal,
         salaries: { francisco: salaryOf(d, "francisco", now), carolina: salaryOf(d, "carolina", now) },
-        limits: d.limits, plans: d.plans,
+        limits: d.limits, plans: d.plans, openings: d.openings,
       };
     }
     case "GET months": {
@@ -323,15 +323,15 @@ export function route(db: DB, method: string, path: string, q: URLSearchParams, 
     case "POST destinations": {
       const kind = body.kind === "investment" ? "investment" : "saving";
       const target = body.targetCents === null || body.targetCents === undefined ? null : cents(body.targetCents);
-      const r = db.prepare("INSERT INTO destinations (kind, name, target_cents, starting_cents) VALUES (?,?,?,?)")
-        .run(kind, text(body.name), target, cents(body.startingCents ?? 0));
+      const r = db.prepare("INSERT INTO destinations (kind, name, target_cents) VALUES (?,?,?)")
+        .run(kind, text(body.name), target);
       return { id: Number(r.lastInsertRowid) };
     }
     case "PUT destinations": {
       const did = id(seg[1]);
       const target = body.targetCents === null || body.targetCents === undefined ? null : cents(body.targetCents);
-      db.prepare("UPDATE destinations SET name=?, target_cents=?, starting_cents=? WHERE id=?")
-        .run(text(body.name), target, cents(body.startingCents ?? 0), did);
+      db.prepare("UPDATE destinations SET name=?, target_cents=? WHERE id=?")
+        .run(text(body.name), target, did);
       return { ok: true };
     }
     case "DELETE destinations": {
@@ -352,6 +352,13 @@ export function route(db: DB, method: string, path: string, q: URLSearchParams, 
         ON CONFLICT (person, category_id) DO UPDATE SET limit_cents=excluded.limit_cents`).run(p, cid, cents(body.limitCents));
       return { ok: true };
     }
+    case "PUT opening": {
+      const p = person(body.person), did = id(body.destinationId), a = cents(body.amountCents);
+      if (a === 0) db.prepare("DELETE FROM opening_balances WHERE person=? AND destination_id=?").run(p, did);
+      else db.prepare(`INSERT INTO opening_balances (person, destination_id, amount_cents) VALUES (?,?,?)
+        ON CONFLICT (person, destination_id) DO UPDATE SET amount_cents=excluded.amount_cents`).run(p, did, a);
+      return { ok: true };
+    }
     case "PUT plans": {
       const p = person(body.person);
       if (!["saving", "investment", "lifestyle"].includes(body.kind)) bad("Tipo inválido");
@@ -365,7 +372,6 @@ export function route(db: DB, method: string, path: string, q: URLSearchParams, 
         const tm = month(body.targetMonth);
         setSetting(db, "goal_month", tm);
         setSetting(db, "goal_target_cents", body.targetCents === null || body.targetCents === undefined ? null : String(cents(body.targetCents)));
-        db.prepare("UPDATE destinations SET starting_cents = ? WHERE is_moving = 1").run(cents(body.startingCents ?? 0));
       });
       return { ok: true };
     }

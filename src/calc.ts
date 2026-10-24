@@ -41,8 +41,9 @@ export interface Category { id: number; name: string; mealEligible: boolean; sor
 export interface LifestyleEntry { person: Person; month: Month; categoryId: number; amountCents: number; mealCents: number }
 export interface Destination {
   id: number; kind: "saving" | "investment"; name: string; isMoving: boolean;
-  targetCents: number | null; startingCents: number;
+  targetCents: number | null;
 }
+export interface Opening { person: Person; destinationId: number; amountCents: number }
 export interface Contribution { id: number; person: Person; month: Month; destinationId: number; amountCents: number }
 export interface SharedExpense {
   id: number; month: Month; name: string; category: string; amountCents: number;
@@ -59,6 +60,7 @@ export interface Dataset {
   lifestyle: LifestyleEntry[];
   destinations: Destination[];
   contributions: Contribution[];
+  openings: Opening[];
   sharedExpenses: SharedExpense[];
   settlements: Settlement[];
   limits: Limit[];
@@ -69,7 +71,7 @@ export interface Dataset {
 export function emptyDataset(): Dataset {
   return {
     recurring: [], incomeEntries: [], categories: [], lifestyle: [], destinations: [],
-    contributions: [], sharedExpenses: [], settlements: [], limits: [], plans: [],
+    contributions: [], openings: [], sharedExpenses: [], settlements: [], limits: [], plans: [],
     goal: { targetMonth: "2027-09", targetCents: null },
   };
 }
@@ -370,8 +372,10 @@ export interface GoalProgress {
   isMoving: boolean;
   targetCents: number | null;
   savedCents: number;
+  openingCents: number;
   remainingCents: number | null;
   progress: number | null;
+  /** Saldo inicial + contribuições, por pessoa. */
   perPerson: Record<Person, number>;
   monthsLeft: number | null;
   neededPerMonth: number | null;
@@ -390,12 +394,18 @@ export function goalProgress(ds: Dataset, d: Destination, now: Month = currentMo
     contributed += c.amountCents;
     byMonth.set(c.month, (byMonth.get(c.month) ?? 0) + c.amountCents);
   }
-  const saved = d.startingCents + contributed;
+  let opening = 0;
+  for (const o of ds.openings) {
+    if (o.destinationId !== d.id) continue;
+    perPerson[o.person] += o.amountCents;
+    opening += o.amountCents;
+  }
+  const saved = opening + contributed;
   let recent = 0;
   for (let i = 0; i < 3; i++) recent += byMonth.get(addMonths(now, -i)) ?? 0;
   const recentAvg = Math.round(recent / 3);
   const base = {
-    destinationId: d.id, name: d.name, isMoving: d.isMoving, targetCents: target, savedCents: saved,
+    destinationId: d.id, name: d.name, isMoving: d.isMoving, targetCents: target, savedCents: saved, openingCents: opening,
     perPerson, recentAvgPerMonth: recentAvg,
   };
   if (target === null || target <= 0) {

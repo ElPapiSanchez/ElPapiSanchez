@@ -16,7 +16,7 @@ test("seed: salários iniciais, subsídios gerados e tudo o resto vazio", () => 
   assert.equal(xmas.length, 2);
   assert.ok(xmas.every((r) => r.startMonth === "2026-11"));
   assert.equal(ds.goal.targetCents, null);
-  assert.equal(ds.destinations.find((d) => d.isMoving)?.startingCents, 0);
+  assert.equal(ds.openings.length, 0);
   assert.equal(ds.contributions.length + ds.lifestyle.length + ds.sharedExpenses.length, 0);
 });
 
@@ -71,4 +71,24 @@ test("API: ignorar subsídio de Natal só num ano; apagar categoria com dados é
   const cat = loadDataset(db).categories[0].id;
   route(db, "PUT", "/api/lifestyle", q(), { person: "carolina", month: "2026-10", categoryId: cat, amountCents: 100, mealCents: 0 }, "2027-12");
   assert.throws(() => route(db, "DELETE", `/api/categories/${cat}`, q(), {}, "2027-12"), /registados/);
+});
+
+test("saldo inicial por pessoa conta para a meta sem criar meses", () => {
+  const db = openDb(":memory:", "2026-10");
+  route(db, "PUT", "/api/opening", q(), { person: "francisco", destinationId: 2, amountCents: 50000 }, "2026-10");
+  route(db, "PUT", "/api/opening", q(), { person: "carolina", destinationId: 2, amountCents: 25000 }, "2026-10");
+  route(db, "PUT", "/api/opening", q(), { person: "carolina", destinationId: 1, amountCents: 10000 }, "2026-10");
+  route(db, "PUT", "/api/goal", q(), { targetMonth: "2027-09", targetCents: 1000000 }, "2026-10");
+  route(db, "PUT", "/api/contribution", q(), { person: "francisco", month: "2026-10", destinationId: 2, amountCents: 10000 }, "2026-10");
+  const goals = route(db, "GET", "/api/goals", q(), {}, "2026-10") as any[];
+  const moving = goals.find((g) => g.isMoving);
+  assert.equal(moving.savedCents, 85000);
+  assert.deepEqual(moving.perPerson, { francisco: 60000, carolina: 25000 });
+  assert.equal(goals.find((g) => g.destinationId === 1).savedCents, 10000);
+  const months = route(db, "GET", "/api/months", q({ view: "together" }), {}, "2026-10") as any[];
+  assert.deepEqual(months.map((m) => m.month), ["2026-10"]);
+  const d = route(db, "GET", "/api/month", q({ view: "together", month: "2026-10" }), {}, "2026-10") as any;
+  assert.equal(d.summary.savings, 10000, "o saldo inicial não é poupança do mês");
+  route(db, "PUT", "/api/opening", q(), { person: "carolina", destinationId: 1, amountCents: 0 }, "2026-10");
+  assert.equal(loadDataset(db).openings.length, 2);
 });

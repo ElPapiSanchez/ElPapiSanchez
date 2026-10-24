@@ -31,9 +31,9 @@ function baseDs(): Dataset {
     { id: 3, name: "Compras", mealEligible: false, sort: 3 },
   ];
   ds.destinations = [
-    { id: 1, kind: "saving", name: "Geral", isMoving: false, targetCents: null, startingCents: 0 },
-    { id: 2, kind: "saving", name: "Mudança", isMoving: true, targetCents: null, startingCents: 0 },
-    { id: 3, kind: "investment", name: "VUAA", isMoving: false, targetCents: null, startingCents: 0 },
+    { id: 1, kind: "saving", name: "Geral", isMoving: false, targetCents: null },
+    { id: 2, kind: "saving", name: "Mudança", isMoving: true, targetCents: null },
+    { id: 3, kind: "investment", name: "VUAA", isMoving: false, targetCents: null },
   ];
   ds.recurring.push(
     rec({ type: "income", subtype: "salary", owner: "francisco", versions: [{ name: "Salário", amountCents: 118107 }] }),
@@ -226,7 +226,7 @@ test("meses dinâmicos: item anual não faz aparecer meses vazios; mês com zero
 test("meta de mudança: progresso, falta e contribuição mensal necessária", () => {
   const ds = baseDs();
   ds.goal.targetCents = 1200000;
-  ds.destinations[1].startingCents = 100000;
+  ds.openings.push({ person: "francisco", destinationId: 2, amountCents: 60000 }, { person: "carolina", destinationId: 2, amountCents: 40000 });
   ds.contributions.push(
     { id: 1, person: "francisco", month: "2026-10", destinationId: 2, amountCents: 30000 },
     { id: 2, person: "carolina", month: "2026-10", destinationId: 2, amountCents: 20000 },
@@ -237,7 +237,8 @@ test("meta de mudança: progresso, falta e contribuição mensal necessária", (
   assert.equal(g.monthsLeft, 11);
   assert.equal(g.neededPerMonth, Math.ceil(1050000 / 11));
   assert.equal(g.status, "behind");
-  assert.deepEqual(g.perPerson, { francisco: 30000, carolina: 20000 });
+  assert.deepEqual(g.perPerson, { francisco: 90000, carolina: 60000 });
+  assert.equal(g.openingCents, 100000);
   ds.goal.targetCents = null;
   assert.equal(goalProgress(ds, ds.destinations[1], "2026-10").status, "no-target");
 });
