@@ -62,7 +62,7 @@ const server = createServer(async (req, res) => {
       const now = currentMonth();
       const stamp = now;
       if (url.pathname === "/api/export.xlsx") {
-        return send(200, await toXlsx(ds, view, now), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        return send(200, toXlsx(ds, view, now), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           { "Content-Disposition": `attachment; filename="financas-${view}-${stamp}.xlsx"` });
       }
       const kind = url.searchParams.get("type") === "movimentos" ? "movimentos" : "resumo";

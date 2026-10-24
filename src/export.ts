@@ -1,4 +1,4 @@
-import ExcelJS from "exceljs";
+import { type Sheet, buildXlsx } from "./xlsx.ts";
 import { type Dataset, type View, PEOPLE, type Person, listMonths, monthSummary, occurrences, sharedLines } from "./calc.ts";
 import { type Month, monthLabel, plainEuros } from "./util.ts";
 
@@ -67,19 +67,13 @@ export function toCsv(header: string[], rows: Cell[][], moneyFrom: number[]): st
 export const SUMMARY_MONEY = [1, 2, 3, 4, 5, 6, 7, 8];
 export const MOVES_MONEY = [5];
 
-export async function toXlsx(ds: Dataset, view: View, now: Month): Promise<Buffer> {
-  const wb = new ExcelJS.Workbook();
-  wb.creator = "Finanças do casal";
-  const fmt = '#,##0.00 "€"';
-  const addSheet = (name: string, header: string[], rows: Cell[][], money: number[]) => {
-    const ws = wb.addWorksheet(name);
-    ws.addRow(header).font = { bold: true };
-    for (const r of withMonth(rows)) ws.addRow(r.map((c, i) => (money.includes(i) ? (c as number) / 100 : c)));
-    money.forEach((i) => (ws.getColumn(i + 1).numFmt = fmt));
-    ws.columns.forEach((c, i) => (c.width = i === 0 ? 12 : i >= 3 && name !== "Resumo mensal" ? 28 : 24));
-    ws.views = [{ state: "frozen", ySplit: 1 }];
-  };
-  addSheet("Resumo mensal", SUMMARY_HEADER, summaryRows(ds, view, now), SUMMARY_MONEY);
-  addSheet("Movimentos", MOVES_HEADER, movementRows(ds, view, now), MOVES_MONEY);
-  return Buffer.from(await wb.xlsx.writeBuffer());
+export function toXlsx(ds: Dataset, view: View, now: Month): Buffer {
+  const sheet = (name: string, header: string[], rows: Cell[][], money: number[]): Sheet => ({
+    name, moneyCols: money,
+    rows: [header, ...withMonth(rows).map((r) => r.map((c, i) => (money.includes(i) ? (c as number) / 100 : c)))],
+  });
+  return buildXlsx([
+    sheet("Resumo mensal", SUMMARY_HEADER, summaryRows(ds, view, now), SUMMARY_MONEY),
+    sheet("Movimentos", MOVES_HEADER, movementRows(ds, view, now), MOVES_MONEY),
+  ]);
 }
