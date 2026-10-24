@@ -1,0 +1,20 @@
+{
+  "name": "financas-casal",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Finanças do casal - app web local com SQLite (um único ficheiro).",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.ts",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}
